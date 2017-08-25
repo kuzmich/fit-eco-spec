@@ -19,121 +19,231 @@ consumes:
   - application/json
 produces:
   - application/json
-paths:
-  /pets:
-    get:
-      description: |
-        Returns all pets from the system that the user has access to
-        Nam sed condimentum est. Maecenas tempor sagittis sapien, nec rhoncus sem sagittis sit amet. Aenean at gravida augue, ac iaculis sem. Curabitur odio lorem, ornare eget elementum nec, cursus id lectus. Duis mi turpis, pulvinar ac eros ac, tincidunt varius justo. In hac habitasse platea dictumst. Integer at adipiscing ante, a sagittis ligula. Aenean pharetra tempor ante molestie imperdiet. Vivamus id aliquam diam. Cras quis velit non tortor eleifend sagittis. Praesent at enim pharetra urna volutpat venenatis eget eget mauris. In eleifend fermentum facilisis. Praesent enim enim, gravida ac sodales sed, placerat id erat. Suspendisse lacus dolor, consectetur non augue vel, vehicula interdum libero. Morbi euismod sagittis libero sed lacinia.
-        Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condimentum ligula luctus nec. Phasellus semper velit eget aliquet faucibus. In a mattis elit. Phasellus vel urna viverra, condimentum lorem id, rhoncus nibh. Ut pellentesque posuere elementum. Sed a varius odio. Morbi rhoncus ligula libero, vel eleifend nunc tristique vitae. Fusce et sem dui. Aenean nec scelerisque tortor. Fusce malesuada accumsan magna vel tempus. Quisque mollis felis eu dolor tristique, sit amet auctor felis gravida. Sed libero lorem, molestie sed nisl in, accumsan tempor nisi. Fusce sollicitudin massa ut lacinia mattis. Sed vel eleifend lorem. Pellentesque vitae felis pretium, pulvinar elit eu, euismod sapien.
-      operationId: findPets
-      parameters:
-        - name: tags
-          in: query
-          description: tags to filter by
-          required: false
-          type: array
-          collectionFormat: csv
-          items:
-            type: string
-        - name: limit
-          in: query
-          description: maximum number of results to return
-          required: false
-          type: integer
-          format: int32
-      responses:
-        200:
-          description: pet response
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Pet'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      description: Creates a new pet in the store.  Duplicates are allowed
-      operationId: addPet
-      parameters:
-        - name: pet
-          in: body
-          description: Pet to add to the store
-          required: true
-          schema:
-            $ref: '#/definitions/NewPet'
-      responses:
-        200:
-          description: pet response
-          schema:
-            $ref: '#/definitions/Pet'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /pets/{id}:
-    get:
-      description: Returns a user based on a single ID, if the user does not have access to the pet
-      operationId: find pet by id
-      parameters:
-        - name: id
-          in: path
-          description: ID of pet to fetch
-          required: true
-          type: integer
-          format: int64
-      responses:
-        200:
-          description: pet response
-          schema:
-            $ref: '#/definitions/Pet'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      description: deletes a single pet based on the ID supplied
-      operationId: deletePet
-      parameters:
-        - name: id
-          in: path
-          description: ID of pet to delete
-          required: true
-          type: integer
-          format: int64
-      responses:
-        204:
-          description: pet deleted
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
 definitions:
-  Pet:
-    allOf:
-      - $ref: '#/definitions/NewPet'
-      - required:
-        - id
-        properties:
-          id:
-            type: integer
-            format: int64
-  NewPet:
-    required:
-      - name
+  Brand: #Имя очереди api.fit.power-bi-collector.brand.change
+    type: object
     properties:
-      name:
+      GUID:
         type: string
-      tag:
+      Name:
         type: string
-  Error:
-    required:
-      - code
-      - message
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  Client: #Контрагенты имя очереди: api.fit.power-bi-collector.customers.change
+    type: object
     properties:
-      code:
+      GUID:
+        type: string
+      Name:
+        type: string
+      IsFolder:
+        type: boolean
+        description: Признак является ли папкой, возможно потребуется для построения иерархии
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+      Pol:
+        type: string
+        description: Пол клиента (Мужской,Женский)
+      DOB:
+        type: string #dateTime
+        description: Дата рождения
+      UrFizLico:
+        type: string
+        description: Юр физ лицо (ЮрЛицо, ФизЛицо)
+  GoodsGroup: #Номенклатурные группы имя очереди: api.fit.power-bi-collector.goods.groups.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Name:
+        type: string
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  GoodsType: #Вид номенклатуры Имя очереди: api.fit.power-bi-collector.goods.types.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Name:
+        type: string
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  PlanOfSTO: #План СТО Имя очереди: api.fit.power-bi-collector.plan.of.sto.change plan.of.sto.change
+    type: object
+    properties:
+      Date:
+        type: string #dateTime
+      STOGUID:
+        $ref: '#/definitions/STO'
+      Cash:
         type: integer
-        format: int32
-      message:
+        description: Выручка
+      Profit:
+        type: integer
+        description: Доход
+  Sales: #Продажи/Возвраты имя очереди: api.fit.power-bi-collector.sales.goods.services
+    type: object
+    properties:
+      GUID:
         type: string
+      Date:
+        type: string #dateTime
+      Number:
+        type: string
+        description: Номер документа
+      STO:
+        $ref: '#/definitions/STO'
+      UserGUID:
+        $ref: '#/definitions/User'
+      Operation:
+        type: string
+        description: Вид операции (Продажа, Возврат)
+      OrderDate:
+        type: string #dateTime
+        description: Дата заказ-наряда
+      OrderNumber:
+        type: string
+        description: Номер документа заказ-наряда
+      Goods:
+        description: Товары
+        type: array
+        items:
+          type: object
+          properties:
+            GoodsGroupGUID:
+              $ref: '#/definitions/GoodsGroup'
+            BrandGUID:
+              $ref: '#/definitions/Brand'
+            Count:
+              type: integer
+            Price:
+              type: integer
+            SummaWithoutDiscount:
+              type: integer
+            Discount:
+              type: integer
+      Services:
+        description: Услуги
+        type: array
+        items:
+          type: object
+          properties:
+            ServiceGUID:
+              $ref: '#/definitions/Service'
+            Count:
+              type: integer
+            Price:
+              type: integer
+            SummaWithoutDiscount:
+              type: integer
+            Discount:
+              type: integer
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  Service: #НормоЧасыМоделей имя очереди: api.fit.power-bi-collector.services.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Number:
+        type: string
+        description: Код услуги
+      Name:
+        type: string
+      ParentGUID:
+        type: string
+        description: Код услуги родителя (папки)
+      ParentName:
+        type: string
+        description: Наименование услуги родителя (папки)
+      ParentNumber:
+        type: string
+        description: Код услуги родителя (папки)
+      IsFolder:
+        type: boolean
+        description: Признак является ли папкой, возможно потребуется для построения иерархии
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  STO: #Имя очереди: api.fit.power-bi-collector.sto.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Name:
+        type: string #
+      IsFolder:
+        type: boolean
+        description: Признак является ли папкой, возможно потребуется для построения иерархии
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+      TerritoryGUID:
+        $ref: '#/definitions/Territory'
+      TerritoryName:
+        type: string
+        description: Наименование Филиала к которому относится СТО
+  Territory: #Имя очереди api.fit.power-bi-collector.filial.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Name:
+        type: string
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+  User: #Пользователи имя очереди: api.fit.power-bi-collector.users.change
+    type: object
+    properties:
+      GUID:
+        type: string
+      Name:
+        type: string
+      IsFolder:
+        type: boolean
+        description: Признак является ли папкой, возможно потребуется для построения иерархии
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
+      ArrayOfSTO:
+        type: array
+        items:
+            $ref: '#/definitions/STO'
+  WorkOrders: #Заказ-наряды имя очереди api.fit.power-bi-collector.work.order
+    type: object
+    properties:
+      GUID:
+        type: string
+      Date:
+        type: string #dateTime
+      Number:
+        type: string
+        description: Номер документа
+      STOGUID:
+        $ref: '#/definitions/STO'
+      ClientGUID:
+        $ref: '#/definitions/Client'
+      Type:
+        type: string
+        description: Вид Заказ-наряда (Ремонт, Продажа, Быстрое обслуживание, Гарантийный ремонт)
+      DiscountGUID:
+        type: string
+        description: Идентификатор акции, пока в выгрузке ее нет, но в будущем появится
+      DateStart:
+        type: string #dateTime
+        description: Дата начала работ
+      DateEnd:
+        type: string #dateTime
+        description: Дата окончания работ
+      DateAccept:
+        type: string #dateTime
+        description: Дата принятия клиента
+      DeletionMark:
+        type: boolean
+        description: Признак пометки на удаление
